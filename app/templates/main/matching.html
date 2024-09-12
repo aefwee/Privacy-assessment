@@ -1,0 +1,109 @@
+{% extends "main/base-user.html" %}
+{% block title %}案例推理和隐私风险评估{% endblock %}
+
+{% block card %}
+    <div class="layui-card-header">
+        <h2>案例推理和隐私风险评估</h2>
+    </div>
+{% endblock %}
+{% block body %}
+    <div class="layui-container">
+        <form id="case-form" class="layui-form">
+            <div class="layui-form-item">
+                <label class="layui-form-label">当事人：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="client" class="layui-input" style="width:300px">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">相关法律：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="legal_basis" class="layui-input" style="width:300px">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">侵犯信息性质：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="information_nature" class="layui-input" style="width:300px">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">侵犯方式：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="violation_mode" class="layui-input" style="width:300px">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">侵犯规模和范围：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="scale_scope" class="layui-input" style="width:300px">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">违法所得：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="illegal_gains" class="layui-input" style="width:300px">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">被告态度和行为：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="attitude_conduct" class="layui-input" style="width:300px">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" type="submit">提交</button>
+                </div>
+            </div>
+        </form>
+        <div id="result" class="layui-card"></div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.getElementById('case-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const data = {
+            client: formData.get('client'),
+            legal_basis: formData.get('legal_basis'),
+            information_nature: formData.get('information_nature'),
+            violation_mode: formData.get('violation_mode'),
+            scale_scope: formData.get('scale_scope'),
+            illegal_gains: formData.get('illegal_gains'),
+            attitude_conduct: formData.get('attitude_conduct')
+        };
+        fetch('/case_match', {
+            method: 'POST',
+            headers: {
+                    'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = `
+                    <div class="layui-card">
+                        <div class="layui-card-header">推理结果</div>
+                        <div class="layui-card-body">
+                            <p>审判结果: ${data.inferred_result}</p>
+                            <p>风险等级: ${data.risk_level}</p>
+                        </div>
+                    </div>
+            `;
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+
+<script type="text/javascript">
+    layui.use(['form','jquery'], function () {
+        var form = layui.form;
+        var $ = layui.$;
+
+    });
+
+</script>
+{% endblock %}

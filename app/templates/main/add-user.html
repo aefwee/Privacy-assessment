@@ -1,0 +1,52 @@
+{% extends 'main/base.html' %}
+{% block title %}添加账户{% endblock %}
+
+{% block card %}
+    <div class="layui-card-header">
+        <h2>用户添加</h2>
+    </div>
+{% endblock %}
+{% block body %}
+    <br />
+    <form class="layui-form" method="post">
+        {{ form.csrf_token }}
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="font-size: medium">用户名:</label>
+            <div class="layui-input-block">
+                {{ form.user_name(class="layui-input", placeholder="请输入您的用户名",style="width:40%") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="font-size: medium">账号：</label>
+            <div class="layui-input-block">
+                {{ form.user_id(class="layui-input", placeholder="账号为12位以内数字",style="width:40%") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="font-size: medium">密码：</label>
+            <div class="layui-input-block">
+                {{ form.user_password(class="layui-input", placeholder="密码为18位以内数字或字母",style="width:40%") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" style="font-size: medium">权限：</label>
+            <div class="layui-input-block">
+                {{ form.user_right(class="layui-input", placeholder="请选择权限",style="width:40%") }}
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                {{ form.submit(class="layui-btn", style="width:100px;font-size:medium") }}
+            </div>
+        </div>
+    </form>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    layui.use(['form','jquery'], function () {
+        var form = layui.form;
+        var $ = layui.$;
+
+    });
+</script>
+{% endblock %}

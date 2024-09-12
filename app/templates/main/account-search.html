@@ -1,0 +1,149 @@
+{% extends "main/base.html" %}
+{% block title %}查询账户信息{% endblock %}
+
+{% block card %}<div class="layui-card-header"><h2>查询账户信息</h2></div>{% endblock %}
+{% block body %}
+    <form class="layui-form" method="post" id="searchForm">
+    {{ form.csrf_token }}
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <div class="layui-row layui-col-space10">
+                    <div class="layui-col-md4">
+                        {{ form.method(class="layui-input-inline") }}
+                    </div>
+                    <div class="layui-col-md6">
+                        <label class="layui-form-label">查询内容：</label>
+                        <div class="layui-input-inline">
+                            {{ form.content(class="layui-input",style="width:250px") }}
+                        </div>
+                    </div>
+                    <div class="layui-col-md2">
+                        <div class="layui-input-inline">{{ form.submit(class="layui-btn", id="search") }}</div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+    <div id="remove">
+    <table lay-even id="result" lay-filter="re">
+      <thead>
+        <tr>
+          <th lay-data="{field:'admin_id', width:200}">用户名</th>
+          <th lay-data="{field:'admin_name', width:200}">账号</th>
+          <th lay-data="{field:'password', width:200}">密码</th>
+          <th lay-data="{field:'right', width:200}">权限</th>
+          <th lay-data="{field:'delete', width:200}">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+
+      </tbody>
+    </table>
+    </div>
+    <table id="test" lay-filter="test"></table>
+
+{% endblock %}
+
+{% block script %}
+    <script>
+    layui.use(['form','table','jquery'], function(){
+        var form = layui.form;
+        var table = layui.table;
+        var $ = layui.$;
+
+        table.init('re', {
+              height: 390
+              ,limit: 7
+              ,page: true
+        });
+
+        $(document).ready(function(){
+            $('#search').on('click',function () {
+                var form = new FormData(document.getElementById("searchForm"));
+                if($('#content').val() === ""){
+                    layui.use('layer', function(){
+                        var layer = layui.layer;
+
+                        layer.msg('请填写查询内容',{time: 800});
+                    });
+                }
+                else{
+                    $.ajax({
+                        url:"{{ url_for('main.find_account') }}",
+                        type:"post",
+                        data:form,
+                        processData:false,
+                        contentType:false,
+                        success:function(data){
+                            if (data.length !== 0){
+                                $('#remove').remove();
+                                table.render({
+                                    elem: '#test'
+                                    ,data:data
+                                    ,cols: [[
+                                      {field:'admin_id', title:'用户名', width:200}
+                                      ,{field:'admin_name', title:'账号', width:200}
+                                      ,{field:'password', title:'密码', width:200}
+                                      ,{field:'right', title:'权限', width:200}
+                                      ,{field: 'delete', title: '操作',width: 200,
+                                            templet: function(d){
+                                            return `<button class="layui-btn layui-btn-sm delete-btn" data-id="${d.admin_id}">删除</button>`;
+                                            }}
+                                    ]]
+                                    ,page: true
+                                    ,height: 390
+                                    ,limit: 7
+                                    ,response: {
+                                      statusCode: 200 //重新规定成功的状态码为 200，table 组件默认为 0
+                                    }
+                                    ,parseData: function(data){ //将原始数据解析成 table 组件所规定的数据
+                                      return {
+                                        "code": data.status, //解析接口状态
+                                        "msg": data.message, //解析提示文本
+                                        "count": data.total, //解析数据长度
+                                        "data": data.rows.item //解析数据列表
+                                      };
+                                    }
+                                });
+                            }
+                            else{
+                                layui.use('layer', function(){
+                                    var layer = layui.layer;
+
+                                    layer.msg('未找到任何结果',{time: 1000});
+                                });
+                            }
+                        }
+                    });
+                }
+                return false;
+            })
+        });
+
+        // 删除按钮点击事件处理程序
+        $(document).on('click', '.delete-btn', function() {
+            var accountId = $(this).data('id'); // 获取账户ID
+            var confirmDelete = confirm('确定要删除该账户吗？'); // 弹出确认框
+            if (confirmDelete) {
+                $.ajax({
+                    url: "{{ url_for('main.account_delete') }}", // 删除账户的URL
+                    type: "POST",
+                    data: {admin_id: accountId}, // 传递账户ID作为参数
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('账户已成功删除'); // 显示删除成功的提示信息
+                            location.reload(); // 刷新页面以更新数据
+                        } else {
+                            alert('删除失败，请重试'); // 显示删除失败的提示信息
+                        }
+                    }
+                });
+            }
+        });
+
+    });
+    </script>
+{% endblock %}
+
